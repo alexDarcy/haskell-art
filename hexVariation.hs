@@ -54,4 +54,4 @@ hexVariation nb g = position (zip (map p2 pos) (map rotateHexagon' test))
 
 main = do
   g <- newStdGen
-  mainWith $ hexVariation 30 g
+  mainWith $ hexVariation 20 g
