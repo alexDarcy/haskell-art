@@ -6,6 +6,12 @@ import System.Random
 import Numeric
 import qualified Debug.Trace as D
 
+-- ! This is a transcription in Haskell of "Hex Variation" by William Kolmyjec.
+-- The algorithm itself is inspired from the version by Steve Berrick.
+-- More details on the Recode project:
+-- http://recodeproject.com/artwork/v3n4hex-variation
+
+
 -- Note : the side of a hexagon is the radius of its circumscribed circle
 
 -- Apothem (distance from the center to the side)

@@ -1,5 +1,5 @@
 hexVariation: hexVariation.o
-	./$@ -o test.svg -w 400
+	./$@ -o hexVariation.svg -w 400
 
 %.o: %.hs
 	ghc $<
