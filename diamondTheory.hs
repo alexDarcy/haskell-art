@@ -14,24 +14,39 @@ triangleRect = polygon ( with
      [ 1        , side      ]
   )
 
-colorNumbers :: [Int]
-colorNumbers = randomRs (0, 1) (mkStdGen 42)
+colorNumbers :: Int -> [Int]
+colorNumbers seed = randomRs (0, 1) (mkStdGen seed)
 
-generateColor :: (Ord a, Num a, Floating a) => Int -> Colour a
+-- colorNumbers :: IO [Int]
+-- colorNumbers = do
+--   g <- newStdGen
+--   let l = randomRs (0, 1) g
+--   return l
+
+generateColor :: Int -> Colour Double
 generateColor nb 
   | (nb == 0) = black
   | otherwise = white
 
 
-triangleLeft = triangleRect # rotateBy (1/2) # fc red # lc red
-triangleRight = triangleRect # fc black
+triangleLeft :: Colour Double -> Diagram B R2
+triangleLeft color = triangleRect # rotateBy (1/2) # fc color # lc color
 
-twoTriangles = beside (r2 (1,-1)) (triangleLeft) (triangleRight)
+triangleRight :: Colour Double -> Diagram B R2
+triangleRight color = triangleRect # fc color #lc color
 
-oneLine:: Diagram B R2
-oneLine = cat (r2 (1, 0)) $ take 4 $ repeat twoTriangles
+twoTriangles :: Colour Double -> Diagram B R2
+twoTriangles color = beside (r2 (1,-1)) (triangleLeft red) (triangleRight color)
+
+oneLine:: Int -> Diagram B R2
+oneLine seed = cat (r2 (1, 0)) $ map twoTriangles colorsFst
+  where 
+    colorsFst = map generateColor $ take 4 $ colors
+    colorsSnd= map generateColor $ take 4 $ drop 4 $ colors
+    colors = colorNumbers seed
 
 diamondTheory :: Diagram B R2
-diamondTheory = cat (r2 (0, 1)) $ take 4 $ repeat oneLine
+diamondTheory = cat (r2 (0, 1)) $ map oneLine seeds
+  where seeds = take 4 $ randomRs (0, 1) (mkStdGen 42)
 
 main = mainWith $ diamondTheory
