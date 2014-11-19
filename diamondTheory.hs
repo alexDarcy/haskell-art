@@ -29,24 +29,30 @@ generateColor nb
   | otherwise = white
 
 
+coloursPairs :: [Colour Double] -> [(Colour Double, Colour Double)]
+coloursPairs [] = []
+coloursPairs (x:[]) = []
+coloursPairs (x:y:xs) = (x,y):coloursPairs xs
+
 triangleLeft :: Colour Double -> Diagram B R2
 triangleLeft color = triangleRect # rotateBy (1/2) # fc color # lc color
 
 triangleRight :: Colour Double -> Diagram B R2
 triangleRight color = triangleRect # fc color #lc color
 
-twoTriangles :: Colour Double -> Diagram B R2
-twoTriangles color = beside (r2 (1,-1)) (triangleLeft red) (triangleRight color)
+tile :: (Colour Double, Colour Double) -> Diagram B R2
+tile color = beside (r2 (1,-1)) (triangleLeft c1) (triangleRight c2)
+  where 
+    c1 = fst color
+    c2 = snd color
 
 oneLine:: Int -> Diagram B R2
-oneLine seed = cat (r2 (1, 0)) $ map twoTriangles colorsFst
+oneLine seed = cat (r2 (1, 0)) $ map tile colors
   where 
-    colorsFst = map generateColor $ take 4 $ colors
-    colorsSnd= map generateColor $ take 4 $ drop 4 $ colors
-    colors = colorNumbers seed
+    colors = coloursPairs $ map generateColor $ take 8 $ colorNumbers seed
 
 diamondTheory :: Diagram B R2
 diamondTheory = cat (r2 (0, 1)) $ map oneLine seeds
-  where seeds = take 4 $ randomRs (0, 1) (mkStdGen 42)
+  where seeds = take 4 $ randomRs (0, 1) (mkStdGen 38)
 
 main = mainWith $ diamondTheory
