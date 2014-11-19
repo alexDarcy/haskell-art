@@ -3,8 +3,7 @@
 import Diagrams.Prelude
 import Diagrams.Backend.SVG.CmdLine
 import System.Random
---import Data.Colour
--- import qualified Debug.Trace as D
+import qualified Debug.Trace as D
 
 side = sqrt(2)
 triangleRect :: Diagram B R2
@@ -48,17 +47,20 @@ tile color = beside (r2 (1,-1)) (triangleLeft color) (triangleRight c)
     c = if color == black then white else black
 
 --rotateTile :: (Transformable b, V b ~ R2) => b -> Int
---rotateTile a = rotateBy (1/fromIntegral a)
+rotateTile :: (Diagram B R2, Int) -> Diagram B R2
+rotateTile x | D.trace ("rotatetile" ++ show (fromIntegral $ snd x)) False = undefined
+rotateTile x = fst x # rotate (x'*pi @@ rad) -- (fromIntegral $ snd x))
+  where x' = fromIntegral $ snd x
 
 oneLine:: Int -> Diagram B R2
 --oneLine seed = cat (r2 (1, 0)) $ map (rotateBy (1/2)) tiles
 oneLine seed = cat (r2 (1, 0)) $ tiles'
   where 
-    tiles' = map (\(a,b) -> a # rotateBy (1/b)) $ zip tiles angles
+    tiles' = map rotateTile $ zip tiles angles
     -- colors = coloursPairs $ map generateColor $ take 8 $ colorNumbers seed
     tiles = map tile colors
     colors = map generateColor $ take 4 $ colorNumbers seed
-    angles = [1.0..4.0]
+    angles = [1, 2] -- take 4 $ randomRs (1, 2) (mkStdGen seed)
 
 diamondTheory :: Diagram B R2
 diamondTheory = cat (r2 (0, 1)) $ map oneLine seeds

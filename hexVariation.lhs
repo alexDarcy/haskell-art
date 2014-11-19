@@ -29,6 +29,7 @@ arcs, along with a vertical line.
 > hexagon' = mconcat [arc1 # translateX (-1)
 >                   , vrule (2*h)
 >                   , arc1 # rotateBy (1/2) # translateX 1 
+>                   , hexagon 1
 >                   ]
 >     where
 >       arc1 = arc' 0.5 (-pi/3 @@ rad) (pi/3 @@ rad) 

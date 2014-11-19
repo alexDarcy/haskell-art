@@ -1,16 +1,13 @@
-all: hexVariation diamondTheory test
+all: hexVariation.svg diamondTheory.svg
 
-hexVariation: hexVariation.o
-	./$@ -o hexVariation.svg -w 800
+hexVariation.svg: hexVariation
+	./hexVariation -o $@ -w 800
 
-diamondTheory: diamondTheory.o
-	./$@ -o $@.svg -w 800
+diamondTheory.svg: diamondTheory 
+	./diamondTheory -o $@ -w 800
 
-test: test.o
-	./$@ -o $@.svg -w 800
-	
-%.o: %.lhs
-	ghc $<
+hexVariation: hexVariation.lhs
+	ghc --make $<
 
-%.o: %.hs
-	ghc $<
+diamondTheory: diamondTheory.hs
+	ghc --make $<
