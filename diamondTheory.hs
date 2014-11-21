@@ -17,12 +17,6 @@ triangleRect = polygon ( with
 colorNumbers :: Int -> [Int]
 colorNumbers seed = randomRs (0, 1) (mkStdGen seed)
 
--- colorNumbers :: IO [Int]
--- colorNumbers = do
---   g <- newStdGen
---   let l = randomRs (0, 1) g
---   return l
-
 generateColor :: Int -> Colour Double
 generateColor nb 
   | (nb == 0) = black
@@ -38,8 +32,8 @@ triangleRight color = triangleRect # fc color #lc color # lw none
 -- Color of the right triangle is the inverse of the left triangle
 -- We enforce old behaviour for the origin of the tile: we want the point of
 -- tangency, enforced by "align"
-tile :: Colour Double -> Diagram B R2
-tile color = beside (r2 (1,-1)) (triangleLeft color # align (r2 (1, -1)))
+square' :: Colour Double -> Diagram B R2
+square' color = beside (r2 (1,-1)) (triangleLeft color # align (r2 (1, -1)))
                                 (triangleRight color')
   where color' = if color == white then black else white
 
@@ -63,22 +57,50 @@ tile color = beside (r2 (1,-1)) (triangleLeft color # align (r2 (1, -1)))
 -- setLines seed = vcat' (with & sep .~ 1) $ map lineLargeTiles seeds
 --   where seeds = take 4 $ randoms (mkStdGen seed)
 
-tile' :: (Int, Int) -> Diagram B R2
-tile' x = tile color # rotate (a'*pi/2 @@ rad)
-  where 
-    color = generateColor $ fst x
-    a' = fromIntegral $ snd x
+listColors = map generateColor $ randomRs (0, 1) (mkStdGen 13)
 
-tiles = map tile' $ zip colors angles
+listAngles = map (\x -> x*pi/2 @@ rad) $ repeat 0  --randomRs (0, 4) (mkStdGen 13) 
+
+smallTile :: (Colour Double, Angle) -> Diagram B R2
+smallTile x = square' (fst x) # rotate (snd x)
+
+-- tiles = map tile' $ zip (listColors True) listAngles
+--     
+-- diamondTheory :: Diagram B R2
+-- diamondTheory = position ( zip (map p2 (zip x y)) tiles) 
+--   where
+--     x = concat $ common
+--     y = concat . transpose $ common
+--     common = take 2 $ repeat [1..2]
+
+-- Place a list of 4 object into a matrix
+-- The origin must be placed at the center with align
+createMatrix x = matrix # alignX 0 # alignY 0 
+  where matrix = (x !! 0 ||| x !! 1 ) 
+                         ===
+                 (x !! 2 ||| x !! 3) 
+
+
+mediumTile = createMatrix listTiles
   where 
-    colors = [1..16]
-    angles = [1..16]
+    listTiles = map smallTile $ zip c a
+    c = take 4 listColors 
+    a = take 4 listAngles
+
+largeTile xSymmetry ySymmetry = createMatrix [a, b, c, d]
+  where 
+    a = mediumTile
+    b = if (ySymmetry) then a # reflectAbout p vY else mediumTile
+    c = if (xSymmetry) then a # reflectAbout p vX  else mediumTile
+    d = if (ySymmetry) 
+        then 
+          if (xSymmetry) then a # rotateBy (-1/2) else a # reflectAbout p vY 
+        else mediumTile
+    p = p2 (1, 0)
+    vY = r2 (0, 1)
+    vX = r2 (1, 0)
 
 diamondTheory :: Diagram B R2
-diamondTheory = position ( zip (map p2 (zip x y)) tiles) 
-  where
-    x = concat $ common
-    y = concat . transpose $ common
-    common = take 4 $ repeat [1..4]
+diamondTheory = largeTile True True
 
 main = mainWith $ diamondTheory
