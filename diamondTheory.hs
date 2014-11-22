@@ -17,6 +17,9 @@ triangleRect = polygon ( with
 colorNumbers :: Int -> [Int]
 colorNumbers seed = randomRs (0, 1) (mkStdGen seed)
 
+nbSymmetries :: Int -> [Int]
+nbSymmetries seed = randomRs (0, 3) (mkStdGen seed)
+
 generateColor :: Int -> Colour Double
 generateColor nb 
   | (nb == 0) = black
@@ -64,15 +67,6 @@ listAngles = map (\x -> x*pi/2 @@ rad) $ repeat 0  --randomRs (0, 4) (mkStdGen 1
 smallTile :: (Colour Double, Angle) -> Diagram B R2
 smallTile x = square' (fst x) # rotate (snd x)
 
--- tiles = map tile' $ zip (listColors True) listAngles
---     
--- diamondTheory :: Diagram B R2
--- diamondTheory = position ( zip (map p2 (zip x y)) tiles) 
---   where
---     x = concat $ common
---     y = concat . transpose $ common
---     common = take 2 $ repeat [1..2]
-
 -- Place a list of 4 object into a matrix
 -- The origin must be placed at the center with align
 createMatrix x = matrix # alignX 0 # alignY 0 
@@ -87,20 +81,27 @@ mediumTile = createMatrix listTiles
     c = take 4 listColors 
     a = take 4 listAngles
 
+-- Beware reflectX is actually a reflection in respect to the Y axis, so the
+-- naming convention is inverted
 largeTile xSymmetry ySymmetry = createMatrix [a, b, c, d]
   where 
-    a = mediumTile
-    b = if (ySymmetry) then a # reflectAbout p vY else mediumTile
-    c = if (xSymmetry) then a # reflectAbout p vX  else mediumTile
-    d = if (ySymmetry) 
-        then 
-          if (xSymmetry) then a # rotateBy (-1/2) else a # reflectAbout p vY 
-        else mediumTile
-    p = p2 (1, 0)
-    vY = r2 (0, 1)
-    vX = r2 (1, 0)
+    a = mediumTile  
+    b = if (ySymmetry) then a # reflectX else mediumTile
+    c = if (xSymmetry) then a # reflectY else mediumTile
+    d 
+      | ySymmetry && xSymmetry = a # rotateBy (-1/2)
+      | ySymmetry  = c # reflectX
+      | xSymmetry  = b # reflectY
+      | otherwise = mediumTile
+
+
+tmp n = largeTile xSymmetry ySymmetry
+  where 
+    xSymmetry = n == 1 || n == 3
+    ySymmetry = n == 2 || n == 3
 
 diamondTheory :: Diagram B R2
-diamondTheory = largeTile True True
+diamondTheory =  hcat' (with & sep .~ 0.5) $ map tmp n
+  where n = take 10 $ nbSymmetries 10
 
 main = mainWith $ diamondTheory
