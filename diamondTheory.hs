@@ -14,11 +14,18 @@ triangleRect = polygon ( with
      [ 1        , side      ]
   )
 
+
 colorNumbers :: Int -> [Int]
 colorNumbers seed = randomRs (0, 1) (mkStdGen seed)
 
-nbSymmetries :: Int -> [Int]
-nbSymmetries seed = randomRs (0, 3) (mkStdGen seed)
+randInts :: Int -> [Int]
+randInts seed = randomRs (0, 3) (mkStdGen seed)
+
+listAngles :: Int -> [Angle]
+listAngles seed = map helper $ randomRs (0, 3) (mkStdGen seed) 
+  where
+    helper :: Int -> Angle 
+    helper x = (fromIntegral x)*pi/2 @@ rad
 
 generateColor :: Int -> Colour Double
 generateColor nb 
@@ -32,40 +39,15 @@ triangleLeft color = triangleRect # rotateBy (1/2) # fc color # lc color # lw no
 triangleRight :: Colour Double -> Diagram B R2
 triangleRight color = triangleRect # fc color #lc color # lw none
 
--- Color of the right triangle is the inverse of the left triangle
+-- Color of the right triangle is the inverse of the left triangle, which is not
+-- modifiable.
 -- We enforce old behaviour for the origin of the tile: we want the point of
 -- tangency, enforced by "align"
-square' :: Colour Double -> Diagram B R2
-square' color = beside (r2 (1,-1)) (triangleLeft color # align (r2 (1, -1)))
-                                (triangleRight color')
-  where color' = if color == white then black else white
+smallTile :: Diagram B R2
+smallTile = beside (r2 (1,-1)) (triangleLeft black # align (r2 (1, -1)))
+                                (triangleRight white)
 
--- rotateTile :: (Diagram B R2, Int) -> Diagram B R2
--- --rotateTile x | D.trace ("rotatetile" ++ show (fromIntegral $ snd x)) False = undefined
--- rotateTile x = fst x # rotate (x'*pi/2 @@ rad) 
---   where x' = fromIntegral $ snd x
--- 
--- lineTiles :: Int -> Diagram B R2
--- lineTiles seed = cat (r2 (1, 0)) $ tiles'
---   where 
---     tiles' = map rotateTile $ zip (take 4 $ repeat tile) angles
---     angles = take 4 $ randomRs (1, 4) (mkStdGen seed)
--- 
--- largeTile seed = vcat $ map lineTiles seeds
---   where seeds = take 4 $ randoms (mkStdGen seed)
--- 
--- lineLargeTiles seed = hcat' (with & sep .~ 1) $ map largeTile seeds
---   where seeds = take 4 $ randoms (mkStdGen seed)
--- 
--- setLines seed = vcat' (with & sep .~ 1) $ map lineLargeTiles seeds
---   where seeds = take 4 $ randoms (mkStdGen seed)
 
-listColors = map generateColor $ randomRs (0, 1) (mkStdGen 13)
-
-listAngles = map (\x -> x*pi/2 @@ rad) $ repeat 0  --randomRs (0, 4) (mkStdGen 13) 
-
-smallTile :: (Colour Double, Angle) -> Diagram B R2
-smallTile x = square' (fst x) # rotate (snd x)
 
 -- Place a list of 4 object into a matrix
 -- The origin must be placed at the center with align
@@ -75,33 +57,40 @@ createMatrix x = matrix # alignX 0 # alignY 0
                  (x !! 2 ||| x !! 3) 
 
 
-mediumTile = createMatrix listTiles
+mediumTile seed = createMatrix listTiles
   where 
-    listTiles = map smallTile $ zip c a
-    c = take 4 listColors 
-    a = take 4 listAngles
+    listTiles = map (\x -> smallTile # rotate x) $  take 4 $ listAngles seed
 
 -- Beware reflectX is actually a reflection in respect to the Y axis, so the
 -- naming convention is inverted
-largeTile xSymmetry ySymmetry = createMatrix [a, b, c, d]
+largeTile seed xSymmetry ySymmetry = createMatrix [a, b, c, d]
   where 
-    a = mediumTile  
-    b = if (ySymmetry) then a # reflectX else mediumTile
-    c = if (xSymmetry) then a # reflectY else mediumTile
+    a = mediumTile seed 
+    b = if (ySymmetry) then a # reflectX else mediumTile $ seed + 1
+    c = if (xSymmetry) then a # reflectY else mediumTile $ seed + 2
     d 
       | ySymmetry && xSymmetry = a # rotateBy (-1/2)
       | ySymmetry  = c # reflectX
       | xSymmetry  = b # reflectY
-      | otherwise = mediumTile
+      | otherwise = mediumTile $ seed + 3
 
 
-tmp n = largeTile xSymmetry ySymmetry
+largeTile' x = largeTile seed xSymmetry ySymmetry
   where 
+    seed = fst x
+    n = snd x
     xSymmetry = n == 1 || n == 3
     ySymmetry = n == 2 || n == 3
 
+
+lineTiles seed =  hcat' (with & sep .~ 0.9) $ map largeTile' $ zip n seeds
+  where 
+    n = take 10 $ randInts seed
+    seeds = take 10 $ randInts $ seed + 1
+
 diamondTheory :: Diagram B R2
-diamondTheory =  hcat' (with & sep .~ 0.5) $ map tmp n
-  where n = take 10 $ nbSymmetries 10
+diamondTheory =  vcat' (with & sep .~ 0.9) $ map lineTiles seeds
+  where
+    seeds = take 10 $ randInts $ 31
 
 main = mainWith $ diamondTheory
