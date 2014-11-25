@@ -23,9 +23,12 @@ randInts seed = randomRs (0, 3) (mkStdGen seed)
 
 listAngles :: Int -> [Angle]
 listAngles seed = map helper $ randomRs (0, 3) (mkStdGen seed) 
-  where
-    helper :: Int -> Angle 
-    helper x = (fromIntegral x)*pi/2 @@ rad
+
+helper :: Int -> Angle 
+helper x = (fromIntegral x)*pi/2 @@ rad
+
+listColors :: Int -> [Colour Double]
+listColors seed = map generateColor $ randomRs (0, 1) (mkStdGen seed) 
 
 generateColor :: Int -> Colour Double
 generateColor nb 
@@ -43,9 +46,10 @@ triangleRight color = triangleRect # fc color #lc color # lw none
 -- modifiable.
 -- We enforce old behaviour for the origin of the tile: we want the point of
 -- tangency, enforced by "align"
-smallTile :: Diagram B R2
-smallTile = beside (r2 (1,-1)) (triangleLeft black # align (r2 (1, -1)))
-                                (triangleRight white)
+smallTile :: Colour Double -> Diagram B R2
+smallTile c = beside (r2 (1,-1)) (triangleLeft c # align (r2 (1, -1)))
+                                (triangleRight c1)
+  where c1 = if c == white then black else white
 
 
 
@@ -56,10 +60,14 @@ createMatrix x = matrix # alignX 0 # alignY 0
                          ===
                  (x !! 2 ||| x !! 3) 
 
+smallTile' :: (Colour Double, Angle) -> Diagram B R2
+smallTile' x = smallTile (fst x) # rotate (snd x)
 
 mediumTile seed = createMatrix listTiles
   where 
-    listTiles = map (\x -> smallTile # rotate x) $  take 4 $ listAngles seed
+    listTiles = map smallTile' $ zip colors angles
+    angles = take 4 $ map helper $ randInts seed
+    colors = take 4 $ listColors seed
 
 -- Beware reflectX is actually a reflection in respect to the Y axis, so the
 -- naming convention is inverted
@@ -85,7 +93,7 @@ largeTile' x = largeTile seed xSymmetry ySymmetry
 
 lineTiles seed =  hcat' (with & sep .~ 0.9) $ map largeTile' $ zip n seeds
   where 
-    n = take 10 $ randInts seed
+    n = take 10 $ repeat 3 -- randInts seed
     seeds = take 10 $ randInts $ seed + 1
 
 diamondTheory :: Diagram B R2
