@@ -4,6 +4,7 @@ import Diagrams.Prelude
 import Diagrams.Backend.SVG.CmdLine
 import System.Random
 import Data.List
+import Data.List.Split
 --import qualified Debug.Trace as D
 
 side = sqrt(2)
@@ -21,11 +22,8 @@ colorNumbers seed = randomRs (0, 1) (mkStdGen seed)
 randInts :: Int -> [Int]
 randInts seed = randomRs (0, 3) (mkStdGen seed)
 
-listAngles :: Int -> [Angle]
-listAngles seed = map helper $ randomRs (0, 3) (mkStdGen seed) 
-
-helper :: Int -> Angle 
-helper x = (fromIntegral x)*pi/2 @@ rad
+--listAngles :: Int -> [Angle]
+--listAngles seed = map helper $ randomRs (0, 3) (mkStdGen seed) 
 
 listColors :: Int -> [Colour Double]
 listColors seed = map generateColor $ randomRs (0, 1) (mkStdGen seed) 
@@ -61,41 +59,50 @@ smallTile' :: Int -> Diagram B R2
 smallTile' x = smallTile # rotate x'
   where x' = (fromIntegral x)*pi/2 @@ rad
 
-mediumTile seed = createMatrix listTiles
+mediumTile angles = createMatrix listTiles
   where 
     listTiles = map smallTile' angles
-    angles = take 4 $ randInts seed
 
 -- Beware reflectX is actually a reflection in respect to the Y axis, so the
 -- naming convention is inverted
-largeTile seed xSymmetry ySymmetry = createMatrix [a, b, c, d]
+-- Needs a list of 16 angles
+largeTile angles xSymmetry ySymmetry = createMatrix [a, b, c, d]
   where 
-    a = mediumTile seed 
-    b = if (ySymmetry) then a # reflectX else mediumTile $ seed + 1
-    c = if (xSymmetry) then a # reflectY else mediumTile $ seed + 2
+    a = mediumTile $ chunks !! 0
+    b = if (ySymmetry) then a # reflectX else mediumTile $ chunks !! 1
+    c = if (xSymmetry) then a # reflectY else mediumTile $ chunks !! 2
     d 
       | ySymmetry && xSymmetry = a # rotateBy (-1/2)
       | ySymmetry  = c # reflectX
       | xSymmetry  = b # reflectY
-      | otherwise = mediumTile $ seed + 3
+      | otherwise = mediumTile $ chunks !! 3
+    chunks = chunksOf 4 angles
 
 
-largeTile' x = largeTile seed xSymmetry ySymmetry
+-- Needs a list of 16 angles
+largeTile' :: ([Int], Int) -> Diagram B R2
+largeTile' x = largeTile n xSymmetry ySymmetry
   where 
-    seed = fst x
-    n = snd x
-    xSymmetry = n == 1 || n == 3
-    ySymmetry = n == 2 || n == 3
+    n = fst x
+    axis = snd x
+    xSymmetry = axis == 1 || axis == 3
+    ySymmetry = axis == 2 || axis == 3
 
 
-lineTiles seed =  hcat' (with & sep .~ 0.9) $ map largeTile' $ zip n seeds
+-- Needs a list of 10*16 and 10 elements
+lineTiles :: ([Int], [Int]) -> Diagram B R2
+lineTiles x =  hcat' (with & sep .~ 0.9) $ map largeTile' $ zip n axes
   where 
-    n = take 10 $ repeat 3 -- randInts seed
-    seeds = take 10 $ randInts $ seed + 1
+    n = chunksOf 16 $ fst x
+    axes = snd x
+    --n = take 10 $ chunksOf 16 $ randInts 3
+    --axes = take 10 $ randInts 7
 
 diamondTheory :: Diagram B R2
-diamondTheory =  vcat' (with & sep .~ 0.9) $ map lineTiles seeds
+diamondTheory =  vcat' (with & sep .~ 0.9) $ map lineTiles $ zip n axes
   where
-    seeds = take 10 $ randInts $ 31
+    n = take 10 $ chunksOf (10*16) $ randInts 3
+    axes = take 10 $ chunksOf 10 $ randInts 7
+    --seeds = take 10 $ randInts $ 31
 
 main = mainWith $ diamondTheory
