@@ -46,12 +46,9 @@ triangleRight color = triangleRect # fc color #lc color # lw none
 -- modifiable.
 -- We enforce old behaviour for the origin of the tile: we want the point of
 -- tangency, enforced by "align"
-smallTile :: Colour Double -> Diagram B R2
-smallTile c = beside (r2 (1,-1)) (triangleLeft c # align (r2 (1, -1)))
-                                (triangleRight c1)
-  where c1 = if c == white then black else white
-
-
+smallTile :: Diagram B R2
+smallTile = beside (r2 (1,-1)) (triangleLeft white # align (r2 (1, -1)))
+                                (triangleRight black)
 
 -- Place a list of 4 object into a matrix
 -- The origin must be placed at the center with align
@@ -60,14 +57,14 @@ createMatrix x = matrix # alignX 0 # alignY 0
                          ===
                  (x !! 2 ||| x !! 3) 
 
-smallTile' :: (Colour Double, Angle) -> Diagram B R2
-smallTile' x = smallTile (fst x) # rotate (snd x)
+smallTile' :: Int -> Diagram B R2
+smallTile' x = smallTile # rotate x'
+  where x' = (fromIntegral x)*pi/2 @@ rad
 
 mediumTile seed = createMatrix listTiles
   where 
-    listTiles = map smallTile' $ zip colors angles
-    angles = take 4 $ map helper $ randInts seed
-    colors = take 4 $ listColors seed
+    listTiles = map smallTile' angles
+    angles = take 4 $ randInts seed
 
 -- Beware reflectX is actually a reflection in respect to the Y axis, so the
 -- naming convention is inverted
