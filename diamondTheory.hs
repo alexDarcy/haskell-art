@@ -63,24 +63,24 @@ largeTile angles xSymmetry ySymmetry = createMatrix [a, b, c, d]
     chunks = chunksOf 4 angles
 
 
--- Needs a list of 16 angles
+-- Needs a list of 16 angles and the number of axes
 largeTile' :: ([Int], Int) -> Diagram B R2
 largeTile' x = largeTile n xSymmetry ySymmetry
   where 
     n = fst x
-    axis = snd x
-    xSymmetry = axis == 1 || axis == 3
-    ySymmetry = axis == 2 || axis == 3
+    nbAxes = snd x
+    xSymmetry = nbAxes == 1 || nbAxes == 3
+    ySymmetry = nbAxes == 2 || nbAxes == 3
 
 centerPos x = (x-0.5)*4 + (x-1)*d
     where d = 0.5
 
-diamondTheory = position (zip (map p2 pos) (map largeTile' $ zip angles axes))
+diamondTheory = position (zip (map p2 pos) (map largeTile' $ zip angles nbAxes))
   where 
     nb = 10
     pos = [(centerPos x, centerPos y) | x <- [1..nb], y <- [1..nb]]
     angles = take (nb*nb) $ chunksOf 16 $ randInts 5
-    axes = take (nb*nb) $ randInts 9
+    nbAxes = take (nb*nb) $ randInts 9
 
 
 main = mainWith $ diamondTheory
