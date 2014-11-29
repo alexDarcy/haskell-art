@@ -1,5 +1,13 @@
-hexVariation: hexVariation.o
-	./$@ -o hexVariation.svg -w 800
+all: hexVariation.svg diamondTheory.svg
 
-%.o: %.lhs
-	ghc $<
+hexVariation.svg: hexVariation
+	./hexVariation -o $@ -w 800
+
+diamondTheory.svg: diamondTheory 
+	./diamondTheory -o $@ -w 800
+
+hexVariation: hexVariation.lhs
+	ghc --make $<
+
+diamondTheory: diamondTheory.hs
+	ghc --make $<
