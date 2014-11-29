@@ -44,9 +44,7 @@ smallTile' :: Int -> Diagram B R2
 smallTile' x = smallTile # rotate x'
   where x' = (fromIntegral x)*pi/2 @@ rad
 
-mediumTile angles = createMatrix listTiles
-  where 
-    listTiles = map smallTile' angles
+mediumTile angles = createMatrix (map smallTile' angles)
 
 -- Beware reflectX is actually a reflection in respect to the Y axis, so the
 -- naming convention is inverted
@@ -79,10 +77,10 @@ centerPos x = (x-0.5)*4 + (x-1)*d
 
 diamondTheory = position (zip (map p2 pos) (map largeTile' $ zip angles axes))
   where 
-    nb = 3
+    nb = 10
     pos = [(centerPos x, centerPos y) | x <- [1..nb], y <- [1..nb]]
-    angles = take (nb*nb) $ chunksOf 16 $ randInts 3
-    axes = take (nb*nb) $ randInts 7
+    angles = take (nb*nb) $ chunksOf 16 $ randInts 5
+    axes = take (nb*nb) $ randInts 9
 
 
 main = mainWith $ diamondTheory
