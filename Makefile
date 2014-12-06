@@ -9,5 +9,5 @@ diamondTheory.svg: diamondTheory
 hexVariation: hexVariation.lhs
 	ghc --make $<
 
-diamondTheory: diamondTheory.hs
+diamondTheory: diamondTheory.lhs
 	ghc --make $<
