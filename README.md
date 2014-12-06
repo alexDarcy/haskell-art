@@ -12,3 +12,8 @@ The algorithm itself is inspired from the version by Steve Berrick in the
 
 ![Hex variation](hexVariation_small.png)
 
+## Diamond theory
+
+This is a transcription in Haskell of ["Diamond Theory" by William Kolmyjec](http://recodeproject.com/artwork/v2n1diamond-theory).
+
+![Diamond theory](diamondTheory_small.png)
