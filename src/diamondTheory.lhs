@@ -18,7 +18,7 @@ triangles. The upper left triangle is always white, the lower right triangle is
 always black. 
 
 > side = sqrt 2
-> triangleRect :: Diagram B R2
+> triangleRect :: Diagram B 
 > triangleRect = polygon ( with
 >   & polyType .~ PolySides
 >      [ 135 @@ deg, 90 @@ deg]
@@ -43,18 +43,20 @@ as we want the triangles to be composed at the point of tangency, enforced by
 For interesting results, the small tiles are rotated randomly 
  with angles in `\{0, \frac{\pi}{2}, \pi, \frac{3 \pi}{2} \}`.
 
-> smallTile' :: Int -> Diagram B R2
+> smallTile' :: Int -> Diagram B
 > smallTile' x = smallTile # rotate x'
 >   where x' = fromIntegral x *pi/2 @@ rad
 
 Now we can create the medium tile, where 4 small tiles are placed in a
 matrix-like fashion. The origin must be placed at the center with align
 
+> createMatrix :: [Diagram B] -> Diagram B
 > createMatrix x = matrix # alignX 0 # alignY 0 
 >   where matrix = (x !! 0 ||| x !! 1 ) 
 >                          ===
 >                  (x !! 2 ||| x !! 3) 
 > 
+> mediumTile :: [Int] -> Diagram B
 > mediumTile angles = createMatrix (map smallTile' angles)
 
 We then create the large tiles as a composition of 4 medium tiles. 
@@ -64,7 +66,7 @@ corresponds  to a random rotation for the small tiles.
 Beware reflectX is actually a reflection in respect to the Y axis, so the
 naming convention is inverted.
 
-> largeTile :: [Int] -> Bool -> Bool -> Diagram B R2
+> largeTile :: [Int] -> Bool -> Bool -> Diagram B
 > largeTile angles xSymmetry ySymmetry = createMatrix [a, b, c, d]
 >   where 
 >     a = mediumTile $ chunks !! 0
@@ -78,7 +80,7 @@ naming convention is inverted.
 >     chunks = chunksOf 4 angles
 > 
 > -- Needs a list of 16 angles and the number of axes
-> largeTile' :: ([Int], Int) -> Diagram B R2
+> largeTile' :: ([Int], Int) -> Diagram B 
 > largeTile' x = largeTile n xSymmetry ySymmetry
 >   where 
 >     n = fst x
