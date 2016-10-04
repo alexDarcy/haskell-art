@@ -4,6 +4,12 @@ To learn and practice Haskell, I used the [diagrams
 library](http://projects.haskell.org/diagrams/) to make some nice mathematical
 plottings. 
 
+Installation is done using stack :
+
+    stack setup
+    stack build
+    stack exec hexVariation -- -o out.svg 300
+
 ## Hex variation
 
 This is a transcription in Haskell of "Hex Variation" by William Kolmyjec. 

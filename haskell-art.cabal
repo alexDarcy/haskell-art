@@ -27,10 +27,3 @@ executable diamondTheory
   build-depends:       base, diagrams, diagrams-lib, diagrams-svg, random, split
   default-language:    Haskell2010
 
-executable humanRights
-  hs-source-dirs:      src
-  main-is:             humanRights.lhs
-  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
-  build-depends:       base, diagrams, diagrams-lib, diagrams-svg
-  default-language:    Haskell2010
-
