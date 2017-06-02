@@ -23,3 +23,9 @@ The algorithm itself is inspired from the version by Steve Berrick in the
 This is a transcription in Haskell of ["Diamond Theory" by William Kolmyjec](http://recodeproject.com/artwork/v2n1diamond-theory).
 
 ![Diamond theory](diamondTheory_small.png)
+
+## Declaration of Human RightsDiamond theory
+
+This is a transcription in Haskell of ["Universel Declaration of Human Rights" by Kenneth Knowlton](http://recodeproject.com/artwork/v1n2universal-declaration-of-human-rights).
+
+![Declaration of Human Rights](declarationRights.png)
